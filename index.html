@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>La Taula — Carta</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0e0c0a;
+      --bg2: #161310;
+      --card: #1a1713;
+      --gold: #c9a84c;
+      --gold-light: #e2c47a;
+      --cream: #f5ede0;
+      --muted: #7a6f63;
+      --border: rgba(201,168,76,0.18);
+      --radius: 12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      text-align: center;
+      padding: 72px 24px 56px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 2px;
+      background: var(--gold);
+    }
+
+    .logo-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 6px;
+    }
+
+    .logo-line span {
+      display: block;
+      width: 48px;
+      height: 1px;
+      background: var(--gold);
+      opacity: 0.6;
+    }
+
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      color: var(--cream);
+      line-height: 1;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--gold-light);
+    }
+
+    .hero p {
+      margin-top: 12px;
+      font-size: 0.78rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(14,12,10,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    nav::-webkit-scrollbar { display: none; }
+
+    .nav-inner {
+      display: flex;
+      gap: 0;
+      justify-content: center;
+      min-width: max-content;
+      margin: 0 auto;
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 18px 28px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.25s;
+      position: relative;
+      white-space: nowrap;
+    }
+
+    nav button::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: 80%;
+      height: 1px;
+      background: var(--gold);
+      transition: transform 0.3s ease;
+    }
+
+    nav button.active,
+    nav button:hover { color: var(--gold-light); }
+
+    nav button.active::after,
+    nav button:hover::after { transform: translateX(-50%) scaleX(1); }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── SECTION ── */
+    .section { display: none; animation: fadeUp 0.45s ease both; }
+    .section.visible { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      text-align: center;
+      padding: 52px 0 36px;
+    }
+
+    .section-header h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.9rem, 5vw, 3rem);
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: var(--cream);
+    }
+
+    .section-header h2 em {
+      font-style: italic;
+      color: var(--gold-light);
+    }
+
+    .section-header p {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── GRID ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      cursor: default;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(201,168,76,0.4);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.45), 0 0 0 0px var(--gold);
+    }
+
+    .card-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+      filter: brightness(0.92) saturate(0.85);
+    }
+
+    .card:hover .card-img {
+      transform: scale(1.04);
+      filter: brightness(1) saturate(1);
+    }
+
+    .card-img-wrap {
+      overflow: hidden;
+      position: relative;
+    }
+
+    .badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: var(--gold);
+      color: #0e0c0a;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .card-body {
+      padding: 20px 22px 22px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .card-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--cream);
+      flex: 1;
+    }
+
+    .card-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      font-weight: 300;
+      color: var(--gold-light);
+      white-space: nowrap;
+    }
+
+    .card-desc {
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .card-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: auto;
+      padding-top: 10px;
+    }
+
+    .tag {
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 3px 8px;
+      border-radius: 30px;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 40px 0 28px;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider span {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      font-style: italic;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── DRINKS (list style) ── */
+    .drink-list { display: flex; flex-direction: column; gap: 0; }
+
+    .drink-item {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+      transition: padding-left 0.2s ease;
+    }
+
+    .drink-item:hover { padding-left: 6px; }
+    .drink-item:last-child { border-bottom: none; }
+
+    .drink-left { flex: 1; }
+
+    .drink-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: var(--cream);
+    }
+
+    .drink-desc {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .drink-dots {
+      flex: 1;
+      border-bottom: 1px dotted rgba(122,111,99,0.3);
+      margin: 0 10px;
+      min-width: 20px;
+    }
+
+    .drink-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: var(--gold-light);
+      white-space: nowrap;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+    }
+
+    footer p {
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    footer strong {
+      color: var(--gold);
+      font-weight: 400;
+    }
+
+    /* ── ALLERGENS NOTE ── */
+    .allergen-note {
+      margin-top: 40px;
+      padding: 18px 22px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .allergen-note strong { color: var(--gold); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 560px) {
+      .hero h1 { font-size: 2.4rem; }
+      nav button { padding: 16px 18px; font-size: 0.68rem; }
+      .grid { grid-template-columns: 1fr; }
+      .card-img { height: 180px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="logo-line">
+      <span></span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="1" stroke-linecap="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
+      <span></span>
+    </div>
+    <h1>La <em>Taula</em></h1>
+    <p>Cuina de mercat · Barcelona · Desde 1994</p>
+  </header>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <button class="active" onclick="showSection('entrants')">Entrants</button>
+      <button onclick="showSection('principals')">Principals</button>
+      <button onclick="showSection('postres')">Postres</button>
+      <button onclick="showSection('begudes')">Begudes</button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- ── ENTRANTS ── -->
+    <section id="entrants" class="section visible">
+      <div class="section-header">
+        <h2>Entrants & <em>Aperitius</em></h2>
+        <p>Per compartir o gaudir a soles</p>
+      </div>
+
+      <div class="grid">
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80" alt="Patates braves" loading="lazy"/>
+            <span class="badge">Clàssic</span>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Patates Braves de la Casa</span>
+              <span class="card-price">6 €</span>
+            </div>
+            <p class="card-desc">Patates fregides amb salsa brava picant i all i oli suau. Elaboració pròpia des del primer dia.</p>
+            <div class="card-tags"><span class="tag">vegà</span><span class="tag">sense gluten</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1528712306091-ed0763094c98?w=600&q=80" alt="Croquetes" loading="lazy"/>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Croquetes de Bacallà i Patata</span>
+              <span class="card-price">9 €</span>
+            </div>
+            <p class="card-desc">Sis croquetes casolanes de bacallà amb patata, cruixents per fora i cremoses per dins.</p>
+            <div class="card-tags"><span class="tag">peix</span><span class="tag">llet</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1613514785940-daed07799d9b?w=600&q=80" alt="Pernil" loading="lazy"/>
+            <span class="badge">Premium</span>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Pernil Ibèric Bellota</span>
+              <span class="card-price">18 €</span>
+            </div>
+            <p class="card-desc">Tall a mà de pernil ibèric de bellota D.O. Guijuelo, servit amb pa amb tomàquet i oli verge extra.</p>
+            <div class="card-tags"><span class="tag">sense gluten</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1572441713132-c542fc4fe282?w=600&q=80" alt="Foie" loading="lazy"/>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Foie Micuit amb Poma</span>
+              <span class="card-price">14 €</span>
+            </div>
+            <p class="card-desc">Foie micuit artesà acompanyat de confitura de poma al calvados i pa brioche torrat.</p>
+            <div class="card-tags"><span class="tag">ou</span><span class="tag">gluten</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1598103442097-8b74394b95c3?w=600&q=80" alt="Carpaccio" loading="lazy"/>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Carpaccio de Vedella</span>
+              <span class="card-price">13 €</span>
+            </div>
+            <p class="card-desc">Filet de vedella tallat fi, rúcula, parmesà en escates, tàperes i vinagreta de llimona.</p>
+            <div class="card-tags"><span class="tag">llet</span><span class="tag">mostassa</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1564834724105-918b73d1b9e0?w=600&q=80" alt="Burrata" loading="lazy"/>
+            <span class="badge">Temporada</span>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Burrata amb Tomàquet de Penedès</span>
+              <span class="card-price">11 €</span>
+            </div>
+            <p class="card-desc">Burrata fresca sobre llit de tomàquets de temporada, herbes aromàtiques i oli d'arbequina.</p>
+            <div class="card-tags"><span class="tag">vegetarià</span><span class="tag">llet</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="allergen-note">
+        <strong>Al·lèrgens</strong> — Si tens alguna al·lèrgia o intolerància, consulta amb el nostre equip. Tots els plats poden contenir traces de fruits secs, gluten i productes làctics.
+      </div>
+    </section>
+
+    <!-- ── PRINCIPALS ── -->
+    <section id="principals" class="section">
+      <div class="section-header">
+        <h2>Plats <em>Principals</em></h2>
+        <p>Cuina de mercat, producte local</p>
+      </div>
+
+      <div class="grid">
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80" alt="Arròs" loading="lazy"/>
+            <span class="badge">Estrella</span>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Arròs de Sípia i Gambes</span>
+              <span class="card-price">22 €</span>
+            </div>
+            <p class="card-desc">Arròs melós amb sípia fresca, gambes de la costa i allioli negre. Mínim per a 2 persones.</p>
+            <div class="card-tags"><span class="tag">marisc</span><span class="tag">per 2</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80" alt="Carn" loading="lazy"/>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Entrecot de Vedella a la Brasa</span>
+              <span class="card-price">28 €</span>
+            </div>
+            <p class="card-desc">300g de vedella galega madurada 30 dies, acompanyada de patates rosti i salsa chimichurri.</p>
+            <div class="card-tags"><span class="tag">sense gluten</span><span class="tag">brasa</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1510130387422-82bed34b37e9?w=600&q=80" alt="Salmó" loading="lazy"/>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Salmó Atlàntic al Miso</span>
+              <span class="card-price">21 €</span>
+            </div>
+            <p class="card-desc">Llom de salmó marinat en pasta de miso, amb puré de coliflor i verdures de temporada saltejades.</p>
+            <div class="card-tags"><span class="tag">peix</span><span class="tag">soja</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80" alt="Pasta" loading="lazy"/>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Tagliatelle de Bolets i Tòfona</span>
+              <span class="card-price">17 €</span>
+            </div>
+            <p class="card-desc">Pasta fresca artesana amb barreja de bolets de temporada, brou de tòfona i parmesà vell.</p>
+            <div class="card-tags"><span class="tag">vegetarià</span><span class="tag">gluten</span><span class="tag">llet</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1604909052743-94e838986d24?w=600&q=80" alt="Calamar" loading="lazy"/>
+            <span class="badge">Temporada</span>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Calamar Farcit de Botifarra</span>
+              <span class="card-price">20 €</span>
+            </div>
+            <p class="card-desc">Calamar gran farcit de botifarra negra i pebrot rostit, sobre sofregit de tomàquet i safrà.</p>
+            <div class="card-tags"><span class="tag">marisc</span><span class="tag">porc</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80" alt="Sopa" loading="lazy"/>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Crema de Carbassa i Cúrcuma</span>
+              <span class="card-price">10 €</span>
+            </div>
+            <p class="card-desc">Crema sedosa de carbassa rostida, cúrcuma fresca i gingebre, amb oli de pebrot vermell i llavors.</p>
+            <div class="card-tags"><span class="tag">vegà</span><span class="tag">sense gluten</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="allergen-note">
+        <strong>Al·lèrgens</strong> — Si tens alguna al·lèrgia o intolerància, consulta amb el nostre equip. Tots els plats poden contenir traces de fruits secs, gluten i productes làctics.
+      </div>
+    </section>
+
+    <!-- ── POSTRES ── -->
+    <section id="postres" class="section">
+      <div class="section-header">
+        <h2>Postres & <em>Dolços</em></h2>
+        <p>El millor final per a un bon àpat</p>
+      </div>
+
+      <div class="grid">
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600&q=80" alt="Crema catalana" loading="lazy"/>
+            <span class="badge">Clàssic</span>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Crema Catalana Caramel·litzada</span>
+              <span class="card-price">7 €</span>
+            </div>
+            <p class="card-desc">La recepta tradicional de la casa, amb vainilla de Tahití i canyella. Servida calenta a taula.</p>
+            <div class="card-tags"><span class="tag">ou</span><span class="tag">llet</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&q=80" alt="Coulant" loading="lazy"/>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Coulant de Xocolata Negra</span>
+              <span class="card-price">8 €</span>
+            </div>
+            <p class="card-desc">Bescuit tou de xocolata 70% amb cor fos, servit amb gelat de vainilla i pols de cacau.</p>
+            <div class="card-tags"><span class="tag">gluten</span><span class="tag">ou</span><span class="tag">llet</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&q=80" alt="Tiramisu" loading="lazy"/>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Tiramisú al Licor de Cafè</span>
+              <span class="card-price">7 €</span>
+            </div>
+            <p class="card-desc">Versió clàssica italiana amb mascarpone, savoiardi, espresso i un toc de licor de cafè artesanal.</p>
+            <div class="card-tags"><span class="tag">ou</span><span class="tag">llet</span><span class="tag">gluten</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img-wrap">
+            <img class="card-img" src="https://images.unsplash.com/photo-1505253304499-671c55fb57fe?w=600&q=80" alt="Fruita" loading="lazy"/>
+            <span class="badge">Lleuger</span>
+          </div>
+          <div class="card-body">
+            <div class="card-top">
+              <span class="card-name">Carpaccio de Fruita i Sorbets</span>
+              <span class="card-price">8 €</span>
+            </div>
+            <p class="card-desc">Tall fi de fruita de temporada, dos sorbets casolans i reducció de maracujà. Refrescant i lleuger.</p>
+            <div class="card-tags"><span class="tag">vegà</span><span class="tag">sense gluten</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="allergen-note">
+        <strong>Al·lèrgens</strong> — Si tens alguna al·lèrgia o intolerància, consulta amb el nostre equip. Tots els plats poden contenir traces de fruits secs, gluten i productes làctics.
+      </div>
+    </section>
+
+    <!-- ── BEGUDES ── -->
+    <section id="begudes" class="section">
+      <div class="section-header">
+        <h2><em>Begudes</em> & Cellers</h2>
+        <p>Selecció curada de vins, caves i coctels</p>
+      </div>
+
+      <!-- VINS -->
+      <div class="divider"><span>Vins Blancs</span></div>
+      <div class="drink-list">
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">Albariño Rías Baixas</div>
+            <div class="drink-desc">Fresc, floral, amb notes cítriques — D.O. Galícia</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">Copa 5 € · Ampolla 22 €</span>
+        </div>
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">Penedès Xarel·lo Ecològic</div>
+            <div class="drink-desc">Mineral i persistent, raïm ecològic local</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">Copa 5 € · Ampolla 20 €</span>
+        </div>
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">Verdejo Rueda Reserva</div>
+            <div class="drink-desc">Herbaci, lleuger i molt fresc — D.O. Rueda</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">Copa 4 € · Ampolla 18 €</span>
+        </div>
+      </div>
+
+      <div class="divider"><span>Vins Negres</span></div>
+      <div class="drink-list">
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">Priorat Garnatxa Vella</div>
+            <div class="drink-desc">Potent, estructurat, notes de fruita negra — D.O.Q. Priorat</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">Copa 7 € · Ampolla 30 €</span>
+        </div>
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">Ribera del Duero Criança</div>
+            <div class="drink-desc">Tanins elegants, fruita madura, roure francès</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">Copa 6 € · Ampolla 26 €</span>
+        </div>
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">La Taula — Vi de la Casa</div>
+            <div class="drink-desc">Blend exclusiu elaborat per al nostre restaurant</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">Copa 4 € · Ampolla 16 €</span>
+        </div>
+      </div>
+
+      <div class="divider"><span>Caves & Escumosos</span></div>
+      <div class="drink-list">
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">Cava Brut Nature Reserva</div>
+            <div class="drink-desc">Sec, lleugeres notes de pa torrat — D.O. Cava</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">Copa 6 € · Ampolla 24 €</span>
+        </div>
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">Prosecco Extra Dry</div>
+            <div class="drink-desc">Lleuger i refrescant, ideal per a aperitiu</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">Copa 5 € · Ampolla 22 €</span>
+        </div>
+      </div>
+
+      <div class="divider"><span>Coctels & Sense Alcohol</span></div>
+      <div class="drink-list">
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">Spritz de la Casa</div>
+            <div class="drink-desc">Aperol, cava, taronja sanguínia i romaní fresc</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">9 €</span>
+        </div>
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">Gin Tònic Premium</div>
+            <div class="drink-desc">Gin artesà local, tònica Fever-Tree i botànics de temporada</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">11 €</span>
+        </div>
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">Llimonada Natural de Menta</div>
+            <div class="drink-desc">Llimona exprimida, menta fresca, sirope artesà — sense alcohol</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">4 €</span>
+        </div>
+        <div class="drink-item">
+          <div class="drink-left">
+            <div class="drink-name">Aigua Mineral Font del Pi</div>
+            <div class="drink-desc">Plana o amb gas — font local de les Guilleries</div>
+          </div>
+          <div class="drink-dots"></div>
+          <span class="drink-price">2.5 €</span>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>
+      <strong>La Taula</strong> · Carrer del Parlament, 42 · Barcelona<br/>
+      Reserva: <strong>+34 93 421 88 10</strong> · lataulabcn@demo.cat<br/>
+      Obert de dilluns a diumenge · 13:00 – 16:00 · 20:00 – 23:30
+    </p>
+  </footer>
+
+  <script>
+    function showSection(id) {
+      // Hide all sections
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+      // Show target
+      const target = document.getElementById(id);
+      target.classList.add('visible');
+      // Update nav
+      document.querySelectorAll('nav button').forEach((btn, i) => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(id));
+      });
+      // Scroll to top of main
+      window.scrollTo({ top: document.querySelector('nav').offsetTop - 4, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
